@@ -1,0 +1,10 @@
+{
+    "id": "/dev/auth/poc/test/app-05",
+    "cmd": "env && sleep 300",
+    "cpus": 0.3,
+    "mem": 45.0,
+    "ports": [
+        8080,
+        9000
+    ]
+}
