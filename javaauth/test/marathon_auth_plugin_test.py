@@ -42,7 +42,7 @@ def test_create_app_with_no_headers(environment):
 
     # Create App
     result_code = post_data(app_url,headers,json_data)
-    assert (result_code != '201')
+    assert (result_code != 201)
     print("Create Test: Pass")
 
     # Read App

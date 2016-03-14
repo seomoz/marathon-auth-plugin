@@ -73,6 +73,58 @@
                 }
             ],
             "user": "admin"
+        },
+        {
+            "password": "ben",
+            "permissions": [
+                {
+                    "allowed": "create",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "update",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "delete",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "view",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "killTask",
+                    "on": "/dev"
+                }
+            ],
+            "user": "ben"
+        },
+        {
+            "password": "mac",
+            "permissions": [
+                {
+                    "allowed": "create",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "update",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "delete",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "view",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "killTask",
+                    "on": "/dev/shared-with-ben"
+                }
+            ],
+            "user": "mac"
         }
     ]
 }
