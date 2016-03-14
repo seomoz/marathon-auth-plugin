@@ -11,7 +11,6 @@ import httplib
 import urllib
 import requests
 import base64
-#sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, "cli"))
 
 def post_data(url,headers,payload):
     result = requests.post(url, data=json.dumps(payload), headers=headers)
