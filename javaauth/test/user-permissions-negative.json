@@ -1,0 +1,126 @@
+{
+    "users": [
+        {
+            "password": "readall",
+            "permissions": [
+                { "allowed": "view", "on": "/"  }
+            ],
+            "user": "readall"
+        },
+        {
+            "password": "ankan",
+            "permissions": [
+                { "allowed": "create", "on": "/" },
+                { "allowed": "update", "on": "/" },
+                { "allowed": "delete", "on": "/" },
+                { "allowed": "view", "on": "/"  },
+                { "allowed": "killTask", "on": "/" }
+            ],
+            "user": "ankan"
+        },
+        {
+            "password": "ernie",
+            "permissions": [
+                {
+                    "allowed": "create",
+                    "on": "/dev/"
+                },
+                {
+                    "allowed": "update",
+                    "on": "/dev/"
+                },
+                {
+                    "allowed": "delete",
+                    "on": "/dev/"
+                },
+                {
+                    "allowed": "view",
+                    "on": "/dev/"
+                },
+                {
+                    "allowed": "killTask",
+                    "on": "/dev/"
+                }
+            ],
+            "user": "ernie"
+        },
+        {
+            "password": "admin",
+            "permissions": [
+                {
+                    "allowed": "create",
+                    "on": "/"
+                },
+                {
+                    "allowed": "update",
+                    "on": "/"
+                },
+                {
+                    "allowed": "delete",
+                    "on": "/"
+                },
+                {
+                    "allowed": "view",
+                    "on": "/"
+                },
+                {
+                    "allowed": "killTask",
+                    "on": "/"
+                }
+            ],
+            "user": "admin"
+        },
+        {
+            "password": "tom",
+            "permissions": [
+                {
+                    "allowed": "create",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "update",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "delete",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "view",
+                    "on": "/dev"
+                },
+                {
+                    "allowed": "killTask",
+                    "on": "/dev"
+                }
+            ],
+            "user": "tom"
+        },
+        {
+            "password": "sam",
+            "permissions": [
+                {
+                    "allowed": "create",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "update",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "delete",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "view",
+                    "on": "/dev/shared-with-ben"
+                },
+                {
+                    "allowed": "killTask",
+                    "on": "/dev/shared-with-ben"
+                }
+            ],
+            "user": "sam"
+        }
+    ]
+}

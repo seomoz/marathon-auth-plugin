@@ -11,6 +11,8 @@ import httplib
 import urllib
 import requests
 import base64
+import subprocess
+import time
 
 def post_data(url,headers,payload):
     result = requests.post(url, data=json.dumps(payload), headers=headers)
@@ -30,6 +32,29 @@ def delete_data(url,headers,payload):
     url = url+payload['id']
     result = requests.delete(url, data=json.dumps(payload), headers=headers)
     return (result.status_code)
+
+def store_original_remote_file():
+    try:
+        user = os.getlogin()
+        remote_path = "/data/marathon/plugins/user-permissions.json"
+        hostname1 = user+"@daldevmesoszk01"
+        subprocess.call(['scp', ':'.join([hostname1,remote_path]),'/tmp'])
+    except:
+        print("Failed to store original file from remote server")
+
+def scp_to_remote_location(filepath):
+    try:
+        user = os.getlogin()
+        remote_path = "/data/marathon/plugins/user-permissions.json"
+        hostname1 = user+"@daldevmesoszk01"
+        hostname2 = user+"@daldevmesoszk02"
+        hostname3 = user+"@daldevmesoszk03"
+
+        subprocess.call(['scp', filepath, ':'.join([hostname1,remote_path])])
+        subprocess.call(['scp', filepath, ':'.join([hostname2,remote_path])])
+        subprocess.call(['scp', filepath, ':'.join([hostname3,remote_path])])
+    except:
+        print("Failed to copy permissions file to remote location")
 
 def test_create_app_with_no_headers(environment):
 
@@ -205,6 +230,94 @@ def test_user_mac_dev_shared_with_ben(environment):
        headers = { "Content-Type": "application/json", "Authorization" : encoded }
        result_code = delete_data(app_url,headers,json_data)
 
+def test_user_tom_on_dev(environment):
+
+  create_pass = False
+  try:
+
+    app_url = 'http://'+environment+':8080/v2/apps'
+    with open("auth-poc-dev-test-app.json") as json_file:
+         json_data = json.load(json_file)
+
+    # Creating Authorization for header using Base64 encoding (username:password)
+    encoded = base64.b64encode(b'tom:tom')
+    encoded = "Basic " + encoded
+    headers = { "Content-Type": "application/json", "Authorization" : encoded }
+
+    # Create App
+    result_code = post_data(app_url,headers,json_data)
+    assert(result_code == 201)
+    print("Create Test: Pass")
+    create_pass = True
+
+    # Read App
+    result_code = get_data(app_url,headers,json_data)
+    assert(result_code == 200)
+    print("Read Test:   Pass")
+
+    # Update App
+    result_code = put_data(app_url,headers,json_data)
+    assert(result_code == 200)
+    print("Update Test: Pass")
+
+    # Delete App
+    result_code = delete_data(app_url,headers,json_data)
+    assert(result_code == 200)
+    print("Delete Test: Pass\n")
+
+  except:
+    print("\nTest Case Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
+def test_user_sam_dev_shared_with_ben(environment):
+
+  create_pass = False
+  try:
+
+    app_url = 'http://'+environment+':8080/v2/apps'
+    with open("auth-poc-dev-shared-test-app.json") as json_file:
+         json_data = json.load(json_file)
+
+    # Creating Authorization for header using Base64 encoding (username:password)
+    encoded = base64.b64encode(b'sam:sam')
+    encoded = "Basic " + encoded
+    headers = { "Content-Type": "application/json", "Authorization" : encoded }
+
+    # Create App
+    result_code = post_data(app_url,headers,json_data)
+    assert(result_code == 201)
+    print("Create Test: Pass")
+    create_pass = True
+
+    # Read App
+    result_code = get_data(app_url,headers,json_data)
+    assert(result_code == 200)
+    print("Read Test:   Pass")
+
+    # Update App
+    result_code = put_data(app_url,headers,json_data)
+    assert(result_code == 200)
+    print("Update Test: Pass")
+
+    # Delete App
+    result_code = delete_data(app_url,headers,json_data)
+    assert(result_code == 200)
+    print("Delete Test: Pass\n")
+
+  except:
+    print("\nTest Case Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
 def test_user_crud_in_unauthorized_environment(environment):
 
   create_pass = False
@@ -269,7 +382,12 @@ def main(args):
             sock.close()
             continue
 
+        # Store original file from remote server to local /tmp
+        store_original_remote_file()
+
         print ("\nExecuting Tests for environemnt :",args[i])
+        scp_to_remote_location("user-permissions.json")
+        time.sleep(5)
 
         print("\nExecuting Test: User with Root Access:\n")
         test_user_crud_on_root(args[i])
@@ -281,6 +399,24 @@ def main(args):
         test_user_mac_dev_shared_with_ben(args[i])
         print("\nExecuting Test: CRUD on Unauthorized Environment:\n")
         test_user_crud_in_unauthorized_environment(args[i])
+
+        print("We will modify the user permissions and rerun.")
+
+        scp_to_remote_location("user-permissions-negative.json")
+        time.sleep(5)
+
+        print("\nExecuting Test: Old User with Dev Access:(Should Fail)")
+        test_user_ben_on_dev(args[i])
+        print("\nExecuting Test: Old User with Shared Directory Access:(Should Fail)")
+        test_user_mac_dev_shared_with_ben(args[i])
+        print("\nExecuting Test: New User with Dev Access:")
+        test_user_tom_on_dev(args[i])
+        print("\nExecuting Test: New User with Shared Directory Access:\n")
+        test_user_sam_dev_shared_with_ben(args[i])
+
+        #Replace back original file to server
+        scp_to_remote_location("/tmp/user-permissions.json")
+        os.system("rm /tmp/user-permissions.json")
 
 if __name__ == "__main__":
     main(sys.argv)
