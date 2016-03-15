@@ -33,8 +33,10 @@ def delete_data(url,headers,payload):
 
 def test_create_app_with_no_headers(environment):
 
-    app_url = 'http://'+environment+':8080/v2/apps'
+  create_pass = False
+  try:
 
+    app_url = 'http://'+environment+':8080/v2/apps'
     with open("auth-poc-prod-test-app.json") as json_file:
          json_data = json.load(json_file)
     headers = { "Content-Type": "application/json" }
@@ -43,11 +45,12 @@ def test_create_app_with_no_headers(environment):
     result_code = post_data(app_url,headers,json_data)
     assert (result_code != 201)
     print("Create Test: Pass")
+    create_pass = True
 
     # Read App
     result_code = get_data(app_url,headers,json_data)
     assert(result_code != 200)
-    print("Read Test: Pass")
+    print("Read Test:   Pass")
 
     # Update App
     result_code = put_data(app_url,headers,json_data)
@@ -59,7 +62,20 @@ def test_create_app_with_no_headers(environment):
     assert(result_code != 200)
     print("Delete Test: Pass\n")
 
+  except:
+
+    print("\nTest Case : Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
 def test_user_crud_on_root(environment):
+
+  create_pass = False
+  try:
 
     app_url = 'http://'+environment+':8080/v2/apps'
 
@@ -75,11 +91,12 @@ def test_user_crud_on_root(environment):
     result_code = post_data(app_url,headers,json_data)
     assert(result_code == 201)
     print("Create Test: Pass")
+    create_pass = True
 
     # Read App
     result_code = get_data(app_url,headers,json_data)
     assert(result_code == 200)
-    print("Read Test: Pass")
+    print("Read Test:   Pass")
 
     # Update App
     result_code = put_data(app_url,headers,json_data)
@@ -91,10 +108,21 @@ def test_user_crud_on_root(environment):
     assert(result_code == 200)
     print("Delete Test: Pass\n")
 
+  except:
+    print("\nTest Case Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
 def test_user_ben_on_dev(environment):
 
-    app_url = 'http://'+environment+':8080/v2/apps'
+  create_pass = False
+  try:
 
+    app_url = 'http://'+environment+':8080/v2/apps'
     with open("auth-poc-dev-test-app.json") as json_file:
          json_data = json.load(json_file)
 
@@ -107,11 +135,12 @@ def test_user_ben_on_dev(environment):
     result_code = post_data(app_url,headers,json_data)
     assert(result_code == 201)
     print("Create Test: Pass")
+    create_pass = True
 
     # Read App
     result_code = get_data(app_url,headers,json_data)
     assert(result_code == 200)
-    print("Read Test: Pass")
+    print("Read Test:   Pass")
 
     # Update App
     result_code = put_data(app_url,headers,json_data)
@@ -123,10 +152,21 @@ def test_user_ben_on_dev(environment):
     assert(result_code == 200)
     print("Delete Test: Pass\n")
 
+  except:
+    print("\nTest Case Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
 def test_user_mac_dev_shared_with_ben(environment):
 
-    app_url = 'http://'+environment+':8080/v2/apps'
+  create_pass = False
+  try:
 
+    app_url = 'http://'+environment+':8080/v2/apps'
     with open("auth-poc-dev-shared-test-app.json") as json_file:
          json_data = json.load(json_file)
 
@@ -139,11 +179,12 @@ def test_user_mac_dev_shared_with_ben(environment):
     result_code = post_data(app_url,headers,json_data)
     assert(result_code == 201)
     print("Create Test: Pass")
+    create_pass = True
 
     # Read App
     result_code = get_data(app_url,headers,json_data)
     assert(result_code == 200)
-    print("Read Test: Pass")
+    print("Read Test:   Pass")
 
     # Update App
     result_code = put_data(app_url,headers,json_data)
@@ -155,10 +196,21 @@ def test_user_mac_dev_shared_with_ben(environment):
     assert(result_code == 200)
     print("Delete Test: Pass\n")
 
+  except:
+    print("\nTest Case Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
 def test_user_crud_in_unauthorized_environment(environment):
 
-    app_url = 'http://'+environment+':8080/v2/apps'
+  create_pass = False
+  try:
 
+    app_url = 'http://'+environment+':8080/v2/apps'
     with open("auth-poc-prod-test-app.json") as json_file:
          json_data = json.load(json_file)
 
@@ -171,11 +223,12 @@ def test_user_crud_in_unauthorized_environment(environment):
     result_code = post_data(app_url,headers,json_data)
     assert(result_code != 201)
     print("Create Test: Not Allowed to Create -- Result: Pass")
+    create_pass = True
 
     # Read App
     result_code = get_data(app_url,headers,json_data)
     assert(result_code != 200)
-    print("Read Test: Not Allowed to Read -- Result: Pass")
+    print("Read Test: Not Allowed to Read     -- Result: Pass")
 
     # Update App
     result_code = put_data(app_url,headers,json_data)
@@ -186,6 +239,15 @@ def test_user_crud_in_unauthorized_environment(environment):
     result_code = delete_data(app_url,headers,json_data)
     print("Delete Test: Not Allowed to Delete -- Result: Pass\n")
 
+  except:
+    print("\nTest Case Failed")
+    # Cleanup the app if the create had passed
+    if create_pass == True:
+       encoded = base64.b64encode(b'admin:admin')
+       encoded = "Basic " + encoded
+       headers = { "Content-Type": "application/json", "Authorization" : encoded }
+       result_code = delete_data(app_url,headers,json_data)
+
 def main(args):
 
     if len(args) < 2:
@@ -195,6 +257,7 @@ def main(args):
     # Iterate through all the environments and execute all the tests
     for i in range(1,len(args)):
 
+        # Check if the environment is up and reachable
         port = 8080
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = sock.connect_ex((args[i], port))
