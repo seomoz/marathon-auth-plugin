@@ -13,6 +13,8 @@ import requests
 import base64
 import subprocess
 import time
+import pdb
+import getopt
 
 def post_data(url,headers,payload):
     result = requests.post(url, data=json.dumps(payload), headers=headers)
@@ -33,26 +35,22 @@ def delete_data(url,headers,payload):
     result = requests.delete(url, data=json.dumps(payload), headers=headers)
     return (result.status_code)
 
-def store_original_remote_file():
+def store_original_remote_file(remote_path,host):
     try:
         user = os.getlogin()
-        remote_path = "/data/marathon/plugins/user-permissions.json"
-        hostname1 = user+"@daldevmesoszk01"
-        subprocess.call(['scp', ':'.join([hostname1,remote_path]),'/tmp'])
+        subprocess.call(['scp', ':'.join([host,remote_path]),'/tmp'])
     except:
         print("Failed to store original file from remote server")
 
-def scp_to_remote_location(filepath):
+def scp_to_remote_location(filepath,remote_path,machine_list,shared_flag):
     try:
         user = os.getlogin()
-        remote_path = "/data/marathon/plugins/user-permissions.json"
-        hostname1 = user+"@daldevmesoszk01"
-        hostname2 = user+"@daldevmesoszk02"
-        hostname3 = user+"@daldevmesoszk03"
-
-        subprocess.call(['scp', filepath, ':'.join([hostname1,remote_path])])
-        subprocess.call(['scp', filepath, ':'.join([hostname2,remote_path])])
-        subprocess.call(['scp', filepath, ':'.join([hostname3,remote_path])])
+        # If shared flag set , copy to one machine else copy to all machines
+        if shared_flag == True:
+          subprocess.call(['scp', filepath, ':'.join([machine_list[0],remote_path])])
+        else:
+          for host in machine_list:
+            subprocess.call(['scp', filepath, ':'.join([host,remote_path])])
     except:
         print("Failed to copy permissions file to remote location")
 
@@ -363,60 +361,70 @@ def test_user_crud_in_unauthorized_environment(environment):
 
 def main(args):
 
-    if len(args) < 2:
-        print("Please provide list of machines and retry.\nExiting...")
+    if len(args) < 3:
+        print("Please provide list of machines and location of permission file, then retry.\nExiting...")
         sys.exit(0)
 
+    remote_file_path = args[(len(args)-1)]
+    shared_flag = False
+    optlist, args = getopt.getopt(sys.argv[1:], 's:',['shared-storage='])
+
+    if len(optlist) > 0:
+      if str(optlist[0][1]) == 'yes':
+        shared_flag = True
+
+    machine_list = args[0:(len(args)-1)]
     # Iterate through all the environments and execute all the tests
-    for i in range(1,len(args)):
+    for machine in machine_list:
 
         # Check if the environment is up and reachable
         port = 8080
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        result = sock.connect_ex((args[i], port))
+        result = sock.connect_ex((machine, port))
         sock.settimeout(1)
         if result == 0:
             sock.close()
         else:
-            print ("\nEnvironment {}: Unreachable".format(args[i]))
+            print ("\nEnvironment {}: Unreachable".format(machine))
             sock.close()
             continue
 
         # Store original file from remote server to local /tmp
-        store_original_remote_file()
+        store_original_remote_file(remote_file_path,machine_list[0])
 
-        print ("\nExecuting Tests for environemnt :",args[i])
-        scp_to_remote_location("user-permissions.json")
-        time.sleep(5)
+        print ("\nExecuting Tests for environment :",machine)
+        scp_to_remote_location("user-permissions.json",remote_file_path,machine_list,shared_flag)
+        time.sleep(10)
 
         print("\nExecuting Test: User with Root Access:\n")
-        test_user_crud_on_root(args[i])
+        test_user_crud_on_root(machine)
         print("\nExecuting Test: User with No Access:\n")
-        test_create_app_with_no_headers(args[i])
+        test_create_app_with_no_headers(machine)
         print("\nExecuting Test: User with Dev Access:\n")
-        test_user_ben_on_dev(args[i])
+        test_user_ben_on_dev(machine)
         print("\nExecuting Test: User with Shared Directory Access:\n")
-        test_user_mac_dev_shared_with_ben(args[i])
+        test_user_mac_dev_shared_with_ben(machine)
         print("\nExecuting Test: CRUD on Unauthorized Environment:\n")
-        test_user_crud_in_unauthorized_environment(args[i])
+        test_user_crud_in_unauthorized_environment(machine)
 
         print("We will modify the user permissions and rerun.")
 
-        scp_to_remote_location("user-permissions-negative.json")
-        time.sleep(5)
+        scp_to_remote_location("user-permissions-negative.json",remote_file_path,machine_list,shared_flag)
+        time.sleep(10)
 
         print("\nExecuting Test: Old User with Dev Access:(Should Fail)")
-        test_user_ben_on_dev(args[i])
+        test_user_ben_on_dev(machine)
         print("\nExecuting Test: Old User with Shared Directory Access:(Should Fail)")
-        test_user_mac_dev_shared_with_ben(args[i])
+        test_user_mac_dev_shared_with_ben(machine)
         print("\nExecuting Test: New User with Dev Access:")
-        test_user_tom_on_dev(args[i])
+        test_user_tom_on_dev(machine)
         print("\nExecuting Test: New User with Shared Directory Access:\n")
-        test_user_sam_dev_shared_with_ben(args[i])
+        test_user_sam_dev_shared_with_ben(machine)
 
         #Replace back original file to server
-        scp_to_remote_location("/tmp/user-permissions.json")
+        scp_to_remote_location("/tmp/user-permissions.json",remote_file_path,machine_list,shared_flag)
         os.system("rm /tmp/user-permissions.json")
+
 
 if __name__ == "__main__":
     main(sys.argv)
